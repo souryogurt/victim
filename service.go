@@ -6,9 +6,22 @@ import (
 	"log"
 )
 
+// Task represents single task in todo list
+// swagger:model
 type Task struct {
-	ID   int    `json:"id"`
+	// The ID of the task
+	// read only: true
+	ID int `json:"id"`
+
+	// The description of the task
+	// required: true
+	// example: do not forget to buy a milk
 	Text string `json:"text"`
+
+	// The status of task completion
+	// required: true
+	// example: false
+	IsCompleted bool `json:"completed"`
 }
 
 type Victim struct {
