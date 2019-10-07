@@ -23,6 +23,7 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi"
+	"github.com/pkg/errors"
 	"github.com/souryogurt/victim"
 )
 
@@ -55,18 +56,21 @@ func GetAllTasks(svc TaskService) http.HandlerFunc {
 		ctx := r.Context()
 		tasks, err := svc.GetAllTasks(ctx)
 		if err != nil {
+			err = errors.Wrap(err, "can't retreive tasks")
 			svc.Println(ctx, err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		js, err := json.Marshal(tasks)
 		if err != nil {
+			err = errors.Wrap(err, "can't marshal response")
 			svc.Println(ctx, err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
 		if _, err := w.Write(js); err != nil {
+			err = errors.Wrap(err, "can't write response")
 			svc.Println(ctx, err)
 		}
 	}
@@ -102,18 +106,21 @@ func CreateTask(svc TaskService) http.HandlerFunc {
 		var task *victim.Task
 		decoder := json.NewDecoder(r.Body)
 		if err := decoder.Decode(&task); err != nil {
+			err = errors.Wrap(err, "can't decode request payload")
 			svc.Println(ctx, err)
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
 		resp, err := svc.CreateTask(ctx, task)
 		if err != nil {
+			err = errors.Wrap(err, "can't create task")
 			svc.Println(ctx, err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		js, err := json.Marshal(resp)
 		if err != nil {
+			err = errors.Wrap(err, "can't marshal response")
 			svc.Println(ctx, err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -121,6 +128,7 @@ func CreateTask(svc TaskService) http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
 		if _, err := w.Write(js); err != nil {
+			err = errors.Wrap(err, "can't write response")
 			svc.Println(ctx, err)
 		}
 	}
@@ -155,24 +163,28 @@ func GetTask(svc TaskService) http.HandlerFunc {
 		ctx := r.Context()
 		ID, err := strconv.Atoi(chi.URLParam(r, "taskID"))
 		if err != nil {
+			err = errors.Wrap(err, "can't parse task ID")
 			svc.Println(ctx, err)
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
 		task, err := svc.GetTask(ctx, ID)
 		if err != nil {
+			err = errors.Wrap(err, "can't retreive task")
 			svc.Println(ctx, err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		js, err := json.Marshal(task)
 		if err != nil {
+			err = errors.Wrap(err, "can't marshal response")
 			svc.Println(ctx, err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
 		if _, err := w.Write(js); err != nil {
+			err = errors.Wrap(err, "can't write response")
 			svc.Println(ctx, err)
 		}
 	}
@@ -205,27 +217,39 @@ type UpdateTaskResponse struct {
 func UpdateTask(svc TaskService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		var task *victim.Task
-		decoder := json.NewDecoder(r.Body)
-		if err := decoder.Decode(&task); err != nil {
+		ID, err := strconv.Atoi(chi.URLParam(r, "taskID"))
+		if err != nil {
+			err = errors.Wrap(err, "can't parse task ID")
 			svc.Println(ctx, err)
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
+		var task *victim.Task
+		decoder := json.NewDecoder(r.Body)
+		if err := decoder.Decode(&task); err != nil {
+			err = errors.Wrap(err, "can't decode request payload")
+			svc.Println(ctx, err)
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			return
+		}
+		task.ID = ID
 		resp, err := svc.UpdateTask(ctx, task)
 		if err != nil {
+			err = errors.Wrap(err, "can't update task")
 			svc.Println(ctx, err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		js, err := json.Marshal(resp)
 		if err != nil {
+			err = errors.Wrap(err, "can't marshal response")
 			svc.Println(ctx, err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
 		if _, err := w.Write(js); err != nil {
+			err = errors.Wrap(err, "can't write response")
 			svc.Println(ctx, err)
 		}
 	}
@@ -260,24 +284,28 @@ func DeleteTask(svc TaskService) http.HandlerFunc {
 		ctx := r.Context()
 		ID, err := strconv.Atoi(chi.URLParam(r, "taskID"))
 		if err != nil {
+			err = errors.Wrap(err, "can't parse task ID")
 			svc.Println(ctx, err)
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
 		taskID, err := svc.DeleteTask(ctx, ID)
 		if err != nil {
+			err = errors.Wrap(err, "can't delete task")
 			svc.Println(ctx, err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		js, err := json.Marshal(taskID)
 		if err != nil {
+			err = errors.Wrap(err, "can't marshal response")
 			svc.Println(ctx, err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
 		if _, err := w.Write(js); err != nil {
+			err = errors.Wrap(err, "can't write response")
 			svc.Println(ctx, err)
 		}
 	}

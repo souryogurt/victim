@@ -2,8 +2,9 @@ package victim
 
 import (
 	"context"
-	"errors"
 	"log"
+
+	"github.com/pkg/errors"
 )
 
 // Task represents single task in todo list
